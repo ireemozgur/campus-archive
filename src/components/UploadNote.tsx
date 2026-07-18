@@ -8,14 +8,14 @@ import { useRouter } from "next/navigation";
 const visibilityOptions = [
   { value: "all", label: "Herkese Açık", desc: "Tüm öğrenciler görebilir" },
   { value: "university", label: "Sadece Kendi Üniversitem", desc: "Aynı üniversitedekiler görebilir" },
+  { value: "faculty", label: "Sadece Kendi Fakültem", desc: "Aynı fakültedekiler görebilir" },
   { value: "department", label: "Sadece Kendi Bölümüm", desc: "Aynı bölümdekiler görebilir" },
-  { value: "both", label: "Üniversitem + Bölümüm", desc: "Aynı üni ve bölümdekiler görebilir" },
 ];
 
 export default function UploadNote() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
-    title: "", description: "", course_code: "", department: "", university: "", visibility: "all",
+    title: "", description: "", course_code: "", department: "", university: "", faculty: "", visibility: "all",
   });
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -26,8 +26,8 @@ export default function UploadNote() {
     const supabase = createClient();
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
-      const { data: profile } = await supabase.from("profiles").select("university, department").eq("id", user.id).single();
-      if (profile) setForm((f) => ({ ...f, university: profile.university || "", department: profile.department || "" }));
+      const { data: profile } = await supabase.from("profiles").select("university, department, faculty").eq("id", user.id).single();
+      if (profile) setForm((f) => ({ ...f, university: profile.university || "", department: profile.department || "", faculty: profile.faculty || "" }));
     });
   }, [open]);
 
@@ -66,8 +66,12 @@ export default function UploadNote() {
   return (
     <>
       <div className="fixed inset-0 z-40 bg-black/30" onClick={() => setOpen(false)} />
-      <div className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-lg rounded-t-2xl bg-white p-6 shadow-xl dark:bg-[#1e293b]">
-        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">Not Yükle</h2>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="mx-auto w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-[#1e293b]">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Not Yükle</h2>
+          <button onClick={() => setOpen(false)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 text-xl leading-none">&times;</button>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-3">
           <input type="text" placeholder="Not Başlığı" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 text-sm outline-none focus:border-campus-500" />
           <textarea placeholder="Açıklama" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 text-sm outline-none focus:border-campus-500" />
@@ -112,6 +116,7 @@ export default function UploadNote() {
             {uploading ? "Yükleniyor..." : "Yükle"}
           </button>
         </form>
+      </div>
       </div>
     </>
   );
