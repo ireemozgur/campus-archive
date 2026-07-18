@@ -12,6 +12,8 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
+  const [sent, setSent] = useState(false);
+
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -30,15 +32,28 @@ export default function RegisterPage() {
     });
 
     if (error) return setError(error.message);
-    router.push("/profile");
-    router.refresh();
+    setSent(true);
+  }
+
+  if (sent) {
+    return (
+      <div className="mx-auto max-w-md px-4 py-20 text-center">
+        <div className="text-5xl mb-4">📧</div>
+        <h1 className="mb-2 text-2xl font-bold text-zinc-900">E-postanı Kontrol Et</h1>
+        <p className="text-zinc-500">
+          <strong>{email}</strong> adresine doğrulama linki gönderdik.
+          Linke tıklayarak hesabını aktifleştirebilirsin.
+        </p>
+        <p className="mt-4 text-sm text-zinc-400">Spam kutusunu da kontrol etmeyi unutma.</p>
+      </div>
+    );
   }
 
   return (
     <div className="mx-auto max-w-md px-4 py-20">
       <h1 className="mb-2 text-2xl font-bold text-zinc-900">Kayıt Ol</h1>
       <p className="mb-8 text-zinc-500">
-        <strong>Üniversite e-postan (.edu.tr)</strong> ile kaydol, katkıda bulunmaya başla.
+        <strong>Üniversite e-postan (.edu.tr)</strong> ile kaydol, kaydını doğrula ve katkıda bulunmaya başla.
       </p>
 
       <form onSubmit={handleRegister} className="space-y-4">
