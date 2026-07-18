@@ -30,9 +30,7 @@ export default function ContactPage() {
 
       <div className="mt-12 rounded-2xl border border-zinc-200 p-6">
         <h2 className="mb-2 text-lg font-semibold text-zinc-900">Bize Ulaşın</h2>
-        <p className="text-sm text-zinc-500">📧 campusarchive@example.com</p>
-        <p className="text-sm text-zinc-500">🐦 @campusarchive</p>
-        <p className="text-sm text-zinc-500">📍 Gazi Üniversitesi, Ankara</p>
+        <p className="text-sm text-zinc-500">📧 campusarchivee@gmail.com</p>
       </div>
     </div>
   );
