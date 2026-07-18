@@ -2,7 +2,7 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme inline {
+@theme {
   --color-campus-50: #eff6ff;
   --color-campus-100: #dbeafe;
   --color-campus-200: #bfdbfe;
