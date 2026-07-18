@@ -21,7 +21,26 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
-.dark body {
-  background-color: #0f172a;
-  color: #e2e8f0;
+.dark {
+  --color-white: #0f172a;
+  --color-zinc-50: #0f172a;
+  --color-zinc-100: #1e293b;
+  --color-zinc-200: #334155;
+  --color-zinc-300: #475569;
+  --color-zinc-400: #64748b;
+  --color-zinc-500: #94a3b8;
+  --color-zinc-600: #cbd5e1;
+  --color-zinc-700: #e2e8f0;
+  --color-zinc-800: #f1f5f9;
+  --color-zinc-900: #f8fafc;
+  --color-campus-50: #1e293b;
+  --color-campus-100: #1e3a8a;
+  --color-campus-200: #1e40af;
+  --color-campus-300: #2563eb;
+  --color-campus-400: #3b82f6;
+  --color-campus-500: #60a5fa;
+  --color-campus-600: #93c5fd;
+  --color-campus-700: #bfdbfe;
+  --color-campus-800: #dbeafe;
+  --color-campus-900: #eff6ff;
 }
