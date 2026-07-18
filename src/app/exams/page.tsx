@@ -16,6 +16,22 @@ export default async function ExamsPage(props: { searchParams?: Promise<{ filter
 
   let query = supabase.from("exams").select("*, profiles(full_name, university, department)");
 
+  // Görünürlük: kullanıcının görmesi gerekenler
+  if (user && profile?.university) {
+    const orConds = [
+      "visibility.eq.all",
+      `and(visibility.eq.university,university.eq.${profile.university})`,
+    ];
+    if (profile.department) {
+      orConds.push(`and(visibility.eq.department,department.eq.${profile.department})`);
+      orConds.push(`and(visibility.eq.both,university.eq.${profile.university},department.eq.${profile.department})`);
+    }
+    query = query.or(orConds.join(","));
+  } else {
+    query = query.eq("visibility", "all");
+  }
+
+  // Ek filtre (kullanıcının seçtiği)
   if (filter === "university" && profile?.university) {
     query = query.eq("university", profile.university);
   } else if (filter === "department" && profile?.department) {
@@ -58,7 +74,7 @@ export default async function ExamsPage(props: { searchParams?: Promise<{ filter
       </div>
 
       {(!exams || exams.length === 0) && (
-        <p className="py-12 text-center text-zinc-400">Bu filtrede soru bulunamadı.</p>
+        <p className="py-12 text-center text-zinc-400">Henüz içerik yok.</p>
       )}
 
       {exams && exams.length > 0 && (

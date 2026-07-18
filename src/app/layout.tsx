@@ -15,9 +15,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kampüs Arşivi",
+  title: "Kampüs Arşivi - Üniversite Öğrencileri İçin Ders Notları, Çıkmış Sorular ve Mentorlük",
   description:
-    "Öğrencilerin çıkmış soruları, notları paylaştığı, mentorlük aldığı ve projelerine ekip arkadaşı bulduğu platform.",
+    "Üniversite öğrencilerinin çıkmış sınav sorularını ve ders notlarını paylaştığı, mentorlük desteği aldığı ve projelerine ekip arkadaşı bulduğu platform. Sadece .edu.tr ile kayıt.",
+  openGraph: {
+    title: "Kampüs Arşivi",
+    description: "Üniversite öğrencileri için ders notları, çıkmış sorular, mentorlük ve ekip arkadaşı platformu.",
+    siteName: "Kampüs Arşivi",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

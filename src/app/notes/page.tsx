@@ -16,6 +16,20 @@ export default async function NotesPage(props: { searchParams?: Promise<{ filter
 
   let query = supabase.from("notes").select("*, profiles(full_name, university, department)");
 
+  if (user && profile?.university) {
+    const orConds = [
+      "visibility.eq.all",
+      `and(visibility.eq.university,university.eq.${profile.university})`,
+    ];
+    if (profile.department) {
+      orConds.push(`and(visibility.eq.department,department.eq.${profile.department})`);
+      orConds.push(`and(visibility.eq.both,university.eq.${profile.university},department.eq.${profile.department})`);
+    }
+    query = query.or(orConds.join(","));
+  } else {
+    query = query.eq("visibility", "all");
+  }
+
   if (filter === "university" && profile?.university) {
     query = query.eq("university", profile.university);
   } else if (filter === "department" && profile?.department) {
@@ -58,12 +72,12 @@ export default async function NotesPage(props: { searchParams?: Promise<{ filter
       </div>
 
       {(!notes || notes.length === 0) && (
-        <p className="py-12 text-center text-zinc-400">Bu filtrede not bulunamadı.</p>
+        <p className="py-12 text-center text-zinc-400">Henüz içerik yok.</p>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {notes?.map((n) => (
-          <div key={n.id} className="group cursor-pointer rounded-2xl border border-zinc-200 p-5 transition-all hover:border-campus-200 hover:shadow-sm">
+          <div key={n.id} className="group rounded-2xl border border-zinc-200 p-5 transition-all hover:border-campus-200 hover:shadow-sm">
             <div className="mb-3 flex items-start justify-between">
               <span className="rounded-lg bg-campus-50 p-2 text-lg">📝</span>
               <span className="text-xs text-zinc-400">{n.page_count || "?"} sayfa</span>
