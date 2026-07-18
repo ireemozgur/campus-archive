@@ -15,8 +15,12 @@ export default function RegisterPage() {
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    const supabase = createClient();
 
+    if (!email.endsWith(".edu.tr")) {
+      return setError("Yalnızca üniversite e-posta adresleri (.edu.tr) ile kayıt yapılabilir.");
+    }
+
+    const supabase = createClient();
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -33,7 +37,9 @@ export default function RegisterPage() {
   return (
     <div className="mx-auto max-w-md px-4 py-20">
       <h1 className="mb-2 text-2xl font-bold text-zinc-900">Kayıt Ol</h1>
-      <p className="mb-8 text-zinc-500">Öğrenci hesabınla kaydol, katkıda bulunmaya başla.</p>
+      <p className="mb-8 text-zinc-500">
+        <strong>Üniversite e-postan (.edu.tr)</strong> ile kaydol, katkıda bulunmaya başla.
+      </p>
 
       <form onSubmit={handleRegister} className="space-y-4">
         <div>
@@ -48,15 +54,16 @@ export default function RegisterPage() {
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-zinc-700">E-posta</label>
+          <label className="mb-1 block text-sm font-medium text-zinc-700">Üniversite E-postası</label>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 text-sm outline-none focus:border-campus-500 focus:ring-2 focus:ring-campus-100"
-            placeholder="ornek@universite.edu.tr"
+            placeholder="ornek@gazi.edu.tr"
           />
+          <p className="mt-1 text-xs text-zinc-400">Sadece .edu.tr uzantılı e-postalar kabul edilir.</p>
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium text-zinc-700">Şifre</label>
