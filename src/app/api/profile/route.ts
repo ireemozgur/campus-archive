@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
 
 export async function POST(request: Request) {
   const authHeader = request.headers.get("Authorization");
@@ -10,13 +10,14 @@ export async function POST(request: Request) {
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-  const supabase = createClient(supabaseUrl, serviceKey, {
+  // Kullanıcının kendi token'ı ile Supabase client
+  const supabase = createServerClient(supabaseUrl, anonKey, {
     auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${token}` } },
   });
 
-  // Token'dan kullanıcıyı doğrula
   const {
     data: { user },
     error: userErr,
@@ -27,15 +28,41 @@ export async function POST(request: Request) {
 
   const body = await request.json();
 
-  const { error } = await supabase.from("profiles").upsert({
-    id: user.id,
-    full_name: body.full_name || null,
-    university: body.university || null,
-    department: body.department || null,
-    grade: body.grade || null,
-    is_mentor: body.is_mentor || false,
-    mentor_bio: body.mentor_bio || null,
-  });
+  // Önce var mı kontrol et
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", user.id)
+    .single();
+
+  let error;
+  if (existing) {
+    // Güncelle
+    ({ error } = await supabase
+      .from("profiles")
+      .update({
+        full_name: body.full_name || null,
+        university: body.university || null,
+        department: body.department || null,
+        grade: body.grade || null,
+        is_mentor: body.is_mentor || false,
+        mentor_bio: body.mentor_bio || null,
+      })
+      .eq("id", user.id));
+  } else {
+    // Ekle
+    ({ error } = await supabase
+      .from("profiles")
+      .insert({
+        id: user.id,
+        full_name: body.full_name || null,
+        university: body.university || null,
+        department: body.department || null,
+        grade: body.grade || null,
+        is_mentor: body.is_mentor || false,
+        mentor_bio: body.mentor_bio || null,
+      }));
+  }
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
