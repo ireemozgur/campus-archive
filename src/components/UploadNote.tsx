@@ -31,19 +31,28 @@ export default function UploadNote() {
     });
   }, [open]);
 
+  const [error, setError] = useState("");
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!file) return;
     setUploading(true);
+    setError("");
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return router.push("/auth/login");
 
-    const fileUrl = await uploadFile(file, "notes");
-    await supabase.from("notes").insert({ ...form, author_id: user.id, file_url: fileUrl });
-    setOpen(false);
-    setUploading(false);
-    router.refresh();
+    try {
+      const fileUrl = await uploadFile(file, "notes");
+      const { error: insertErr } = await supabase.from("notes").insert({ ...form, author_id: user.id, file_url: fileUrl });
+      if (insertErr) throw insertErr;
+      setOpen(false);
+      router.refresh();
+    } catch (err: any) {
+      setError(err.message || "Yükleme başarısız");
+    } finally {
+      setUploading(false);
+    }
   }
 
   if (!open) {
@@ -81,7 +90,9 @@ export default function UploadNote() {
             ))}
           </div>
 
+          {file && file.size > 5 * 1024 * 1024 && <p className="text-xs text-red-500">Dosya 5MB'dan büyük, yüklenemeyebilir</p>}
           <input type="file" accept=".pdf,.jpg,.png" onChange={(e) => setFile(e.target.files?.[0] || null)} required className="w-full text-sm" />
+          {error && <p className="text-sm text-red-500">{error}</p>}
           <button type="submit" disabled={uploading} className="w-full rounded-xl bg-campus-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-campus-700 disabled:opacity-50">
             {uploading ? "Yükleniyor..." : "Yükle"}
           </button>
