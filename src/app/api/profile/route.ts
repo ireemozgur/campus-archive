@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 
 export async function POST(request: Request) {
   const authHeader = request.headers.get("Authorization");
@@ -12,8 +12,7 @@ export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-  // Kullanıcının kendi token'ı ile Supabase client
-  const supabase = createServerClient(supabaseUrl, anonKey, {
+  const supabase = createClient(supabaseUrl, anonKey, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: { headers: { Authorization: `Bearer ${token}` } },
   });
@@ -28,7 +27,6 @@ export async function POST(request: Request) {
 
   const body = await request.json();
 
-  // Önce var mı kontrol et
   const { data: existing } = await supabase
     .from("profiles")
     .select("id")
@@ -37,7 +35,6 @@ export async function POST(request: Request) {
 
   let error;
   if (existing) {
-    // Güncelle
     ({ error } = await supabase
       .from("profiles")
       .update({
@@ -50,7 +47,6 @@ export async function POST(request: Request) {
       })
       .eq("id", user.id));
   } else {
-    // Ekle
     ({ error } = await supabase
       .from("profiles")
       .insert({
