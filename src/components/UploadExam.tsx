@@ -1,16 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { uploadFile } from "@/lib/upload";
 import { useRouter } from "next/navigation";
 
 export default function UploadExam() {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ course_code: "", course_name: "", year: "", type: "Vize" });
+  const [form, setForm] = useState({
+    course_code: "", course_name: "", year: "", type: "Vize",
+    description: "", university: "", department: "",
+  });
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (!open) return;
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return;
+      const { data: profile } = await supabase.from("profiles").select("university, department").eq("id", user.id).single();
+      if (profile) setForm((f) => ({ ...f, university: profile.university || "", department: profile.department || "" }));
+    });
+  }, [open]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -22,7 +35,6 @@ export default function UploadExam() {
 
     const fileUrl = await uploadFile(file, "exams");
     await supabase.from("exams").insert({ ...form, author_id: user.id, file_url: fileUrl });
-
     setOpen(false);
     setUploading(false);
     router.refresh();
@@ -46,12 +58,15 @@ export default function UploadExam() {
             <input type="text" placeholder="Ders Kodu" value={form.course_code} onChange={(e) => setForm({ ...form, course_code: e.target.value })} required className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 text-sm outline-none focus:border-campus-500" />
             <input type="text" placeholder="Ders Adı" value={form.course_name} onChange={(e) => setForm({ ...form, course_name: e.target.value })} required className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 text-sm outline-none focus:border-campus-500" />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <input type="text" placeholder="Yıl (2025)" value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} required className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 text-sm outline-none focus:border-campus-500" />
+          <textarea placeholder="Açıklama (zorunlu değil)" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 text-sm outline-none focus:border-campus-500" />
+          <div className="grid grid-cols-3 gap-3">
+            <input type="text" placeholder="Yıl" value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} required className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 text-sm outline-none focus:border-campus-500" />
             <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 text-sm outline-none focus:border-campus-500">
               <option>Vize</option><option>Final</option><option>Bütünleme</option>
             </select>
+            <input type="text" placeholder="Bölüm" value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 text-sm outline-none focus:border-campus-500" />
           </div>
+          <input type="text" placeholder="Üniversite (profilinden alınır)" value={form.university} onChange={(e) => setForm({ ...form, university: e.target.value })} className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 text-sm outline-none focus:border-campus-500" />
           <input type="file" accept=".pdf,.jpg,.png" onChange={(e) => setFile(e.target.files?.[0] || null)} required className="w-full text-sm" />
           <button type="submit" disabled={uploading} className="w-full rounded-xl bg-campus-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-campus-700 disabled:opacity-50">
             {uploading ? "Yükleniyor..." : "Yükle"}
