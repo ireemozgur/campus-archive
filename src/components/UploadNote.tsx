@@ -90,8 +90,23 @@ export default function UploadNote() {
             ))}
           </div>
 
-          {file && file.size > 5 * 1024 * 1024 && <p className="text-xs text-red-500">Dosya 5MB'dan büyük, yüklenemeyebilir</p>}
-          <input type="file" accept=".pdf,.jpg,.png" onChange={(e) => setFile(e.target.files?.[0] || null)} required className="w-full text-sm" />
+          <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-300 p-6 text-center hover:border-campus-400 transition-colors">
+            {file ? (
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-2xl">📎</span>
+                <span className="text-sm font-medium text-zinc-700">{file.name}</span>
+                <span className="text-xs text-zinc-400">{(file.size / 1024 / 1024).toFixed(1)} MB</span>
+                {file.size > 5 * 1024 * 1024 && <span className="text-xs text-red-500">5MB limit - çok büyük</span>}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-3xl">📁</span>
+                <span className="text-sm font-medium text-zinc-600">PDF, JPG veya PNG seç</span>
+                <span className="text-xs text-zinc-400">Maksimum 5MB</span>
+              </div>
+            )}
+            <input type="file" accept=".pdf,.jpg,.png" onChange={(e) => setFile(e.target.files?.[0] || null)} required className="hidden" />
+          </label>
           {error && <p className="text-sm text-red-500">{error}</p>}
           <button type="submit" disabled={uploading} className="w-full rounded-xl bg-campus-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-campus-700 disabled:opacity-50">
             {uploading ? "Yükleniyor..." : "Yükle"}

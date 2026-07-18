@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AuthButton from "./AuthButton";
+import ThemeToggle from "./ThemeToggle";
 
 export default async function Header() {
   const supabase = await createClient();
@@ -27,6 +28,7 @@ export default async function Header() {
             Ekip Ara
           </Link>
           <AuthButton user={user} />
+          <ThemeToggle />
         </nav>
         <button className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 sm:hidden">
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
