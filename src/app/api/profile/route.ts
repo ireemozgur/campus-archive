@@ -20,11 +20,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Geçersiz oturum" }, { status: 401 });
   }
   const user = await userRes.json();
-  const userId = user.id;
 
-  // Profili upsert et (doğrudan REST API ile)
-  const upsertRes = await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}`, {
-    method: "PUT",
+  // Upsert: POST + resolution=merge-duplicates ile
+  const upsertRes = await fetch(`${supabaseUrl}/rest/v1/profiles`, {
+    method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
       apikey: anonKey,
@@ -32,19 +31,20 @@ export async function POST(request: Request) {
       Prefer: "resolution=merge-duplicates",
     },
     body: JSON.stringify({
-      id: userId,
-      full_name: body.full_name || "",
-      university: body.university || "",
-      department: body.department || "",
-      grade: body.grade || "",
+      id: user.id,
+      full_name: body.full_name || null,
+      university: body.university || null,
+      department: body.department || null,
+      grade: body.grade || null,
       is_mentor: body.is_mentor || false,
-      mentor_bio: body.mentor_bio || "",
+      mentor_bio: body.mentor_bio || null,
     }),
   });
 
   if (!upsertRes.ok) {
-    const err = await upsertRes.text();
-    return NextResponse.json({ error: `Supabase hatası: ${err}` }, { status: 500 });
+    const errText = await upsertRes.text();
+    console.error("Supabase upsert hatası:", upsertRes.status, errText);
+    return NextResponse.json({ error: `Supabase (${upsertRes.status}): ${errText}` }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });
