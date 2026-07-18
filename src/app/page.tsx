@@ -5,7 +5,8 @@ const features = [
   { title: "Çıkmış Sorular", description: "Geçmiş yıllara ait sınav sorularını bul, paylaş.", href: "/exams", emoji: "📄" },
   { title: "Ders Notları", description: "Arkadaşlarınla notlarını paylaş, eksiklerini tamamla.", href: "/notes", emoji: "📝" },
   { title: "Mentorlük", description: "Gönüllü mentörlere soru sor, üst sınıflardan destek al.", href: "/mentorship", emoji: "🎯" },
-  { title: "Ekip Arkadaşı Bul", description: "Projene ortak bul, birlikte çalışacağın ekibi kur.", href: "/teammates", emoji: "🤝" },
+  { title: "Ekip Ara", description: "Projene ortak bul, birlikte çalışacağın ekibi kur.", href: "/teammates", emoji: "🤝" },
+  { title: "Topluluk Ara", description: "Kulüp ve topluluklara katıl, birlikte üret.", href: "/teammates?tab=community", emoji: "👥" },
 ];
 
 export default async function Home() {
@@ -42,7 +43,7 @@ const communityPosts = teamPosts.slice(3);
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-24">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
           {features.map((f) => (
             <Link key={f.title} href={f.href} className="group rounded-2xl border border-zinc-200 p-6 transition-all hover:border-campus-200 hover:shadow-sm dark:border-zinc-700 dark:hover:border-campus-700">
               <span className="mb-3 block text-3xl">{f.emoji}</span>
