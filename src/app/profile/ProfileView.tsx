@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
 type Profile = {
@@ -11,7 +10,6 @@ type Profile = {
   grade: string | null;
   is_mentor: boolean;
   mentor_bio: string | null;
-  created_at: string | null;
 };
 
 export default function ProfileView({ profile, email, stats }: { profile: Profile | null; email: string; stats: { exams: number; notes: number } }) {
@@ -32,12 +30,19 @@ export default function ProfileView({ profile, email, stats }: { profile: Profil
     e.preventDefault();
     setSaving(true);
     setMessage("");
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
 
-    const { error } = await supabase.from("profiles").upsert({ id: user.id, ...form });
-    if (error) { setMessage("Hata: " + error.message); setSaving(false); return; }
+    const res = await fetch("/api/profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      setMessage("Hata: " + data.error);
+      setSaving(false);
+      return;
+    }
 
     setSaving(false);
     setEditing(false);
@@ -45,6 +50,13 @@ export default function ProfileView({ profile, email, stats }: { profile: Profil
     setTimeout(() => setMessage(""), 3000);
     router.refresh();
   }
+
+  const handleLogout = async () => {
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    await supabase.auth.signOut();
+    router.push("/");
+    router.refresh();
+  };
 
   if (!editing) {
     return (
@@ -57,7 +69,6 @@ export default function ProfileView({ profile, email, stats }: { profile: Profil
           <p className="text-zinc-500">{email}</p>
         </div>
 
-        {/* Profil Bilgileri */}
         <div className="mb-6 rounded-2xl border border-zinc-200 p-6">
           <h2 className="mb-4 text-lg font-semibold text-zinc-900">Bilgiler</h2>
           <div className="space-y-3">
@@ -91,9 +102,11 @@ export default function ProfileView({ profile, email, stats }: { profile: Profil
           <button onClick={() => setEditing(true)} className="mt-4 w-full rounded-xl bg-campus-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-campus-700">
             Profili Düzenle
           </button>
+          <button onClick={handleLogout} className="mt-2 w-full rounded-xl border border-zinc-300 px-5 py-2.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50">
+            Çıkış Yap
+          </button>
         </div>
 
-        {/* İstatistikler */}
         <div className="grid grid-cols-2 gap-4">
           <div className="rounded-2xl border border-zinc-200 p-5 text-center">
             <p className="text-2xl font-bold text-campus-700">{stats.exams}</p>
