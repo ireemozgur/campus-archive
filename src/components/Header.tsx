@@ -1,6 +1,11 @@
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import AuthButton from "./AuthButton";
 
-export default function Header() {
+export default async function Header() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/80 backdrop-blur-sm">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
@@ -18,12 +23,10 @@ export default function Header() {
           <Link href="/mentorship" className="transition-colors hover:text-campus-600">
             Mentorlük
           </Link>
-          <Link
-            href="/profile"
-            className="rounded-full bg-campus-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-campus-700"
-          >
-            Giriş Yap
+          <Link href="/teammates" className="transition-colors hover:text-campus-600">
+            Ekip Ara
           </Link>
+          <AuthButton user={user} />
         </nav>
         <button className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 sm:hidden">
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

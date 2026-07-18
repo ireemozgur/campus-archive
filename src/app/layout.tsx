@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Kampüs Arşivi",
   description:
-    "Öğrencilerin çıkmış soruları ve notları paylaştığı, üst sınıflardan mentorlük alabildiği platform.",
+    "Öğrencilerin çıkmış soruları, notları paylaştığı, mentorlük aldığı ve projelerine ekip arkadaşı bulduğu platform.",
 };
 
 export default function RootLayout({

@@ -15,9 +15,15 @@ const features = [
   },
   {
     title: "Mentorlük",
-    description: "Üst sınıflardan birebir mentorlük al, kariyerine yön ver.",
+    description: "Gönüllü mentörlere soru sor, üst sınıflardan destek al.",
     href: "/mentorship",
     emoji: "🎯",
+  },
+  {
+    title: "Ekip Arkadaşı Bul",
+    description: "Projene ortak bul, birlikte çalışacağın ekibi kur.",
+    href: "/teammates",
+    emoji: "🤝",
   },
 ];
 
@@ -50,7 +56,7 @@ export default function Home() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-24">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((f) => (
             <Link
               key={f.title}
