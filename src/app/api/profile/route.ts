@@ -1,5 +1,18 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+
+const SUPABASE_URL = "https://myssfqqrihcuijgnxrhs.supabase.co";
+const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+async function supabaseFetch(path: string, options: RequestInit = {}) {
+  return fetch(`${SUPABASE_URL}${path}`, {
+    ...options,
+    headers: {
+      apikey: ANON_KEY,
+      "Content-Type": "application/json",
+      ...(options.headers as Record<string, string>),
+    },
+  });
+}
 
 export async function POST(request: Request) {
   const authHeader = request.headers.get("Authorization");
@@ -9,47 +22,44 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Oturum açmanız gerekiyor" }, { status: 401 });
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-  const supabase = createClient(supabaseUrl, anonKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { Authorization: `Bearer ${token}` } },
+  // Kullanıcıyı doğrula
+  const userRes = await supabaseFetch("/auth/v1/user", {
+    headers: { Authorization: `Bearer ${token}` },
   });
-
-  const {
-    data: { user },
-    error: userErr,
-  } = await supabase.auth.getUser(token);
-  if (userErr || !user) {
+  if (!userRes.ok) {
     return NextResponse.json({ error: "Geçersiz oturum" }, { status: 401 });
   }
-
+  const user = await userRes.json();
   const body = await request.json();
 
-  const { data: existing } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("id", user.id)
-    .single();
+  // Profil var mı kontrol et
+  const checkRes = await supabaseFetch(
+    `/rest/v1/profiles?id=eq.${user.id}&select=id`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+  const existing = checkRes.ok ? await checkRes.json() : [];
 
-  let error;
-  if (existing) {
-    ({ error } = await supabase
-      .from("profiles")
-      .update({
+  let apiRes: Response;
+  if (existing.length > 0) {
+    // Güncelle
+    apiRes = await supabaseFetch(`/rest/v1/profiles?id=eq.${user.id}`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}`, Prefer: "return=minimal" },
+      body: JSON.stringify({
         full_name: body.full_name || null,
         university: body.university || null,
         department: body.department || null,
         grade: body.grade || null,
         is_mentor: body.is_mentor || false,
         mentor_bio: body.mentor_bio || null,
-      })
-      .eq("id", user.id));
+      }),
+    });
   } else {
-    ({ error } = await supabase
-      .from("profiles")
-      .insert({
+    // Ekle
+    apiRes = await supabaseFetch("/rest/v1/profiles", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, Prefer: "return=minimal" },
+      body: JSON.stringify({
         id: user.id,
         full_name: body.full_name || null,
         university: body.university || null,
@@ -57,11 +67,13 @@ export async function POST(request: Request) {
         grade: body.grade || null,
         is_mentor: body.is_mentor || false,
         mentor_bio: body.mentor_bio || null,
-      }));
+      }),
+    });
   }
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!apiRes.ok) {
+    const err = await apiRes.text();
+    return NextResponse.json({ error: `Hata: ${err}` }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });
