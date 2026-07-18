@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import ProfileForm from "./ProfileForm";
+import ProfileView from "./ProfileView";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -14,17 +14,19 @@ export default async function ProfilePage() {
     .eq("id", user.id)
     .single();
 
+  const { count: examCount } = await supabase
+    .from("exams")
+    .select("*", { count: "exact", head: true })
+    .eq("author_id", user.id);
+
+  const { count: noteCount } = await supabase
+    .from("notes")
+    .select("*", { count: "exact", head: true })
+    .eq("author_id", user.id);
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
-      <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-campus-100 text-3xl font-bold text-campus-700">
-          {profile?.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
-        </div>
-        <h1 className="text-2xl font-bold text-zinc-900">Profilim</h1>
-        <p className="text-zinc-500">{user.email}</p>
-      </div>
-
-      <ProfileForm profile={profile} />
+      <ProfileView profile={profile} email={user.email || ""} stats={{ exams: examCount || 0, notes: noteCount || 0 }} />
     </div>
   );
 }
