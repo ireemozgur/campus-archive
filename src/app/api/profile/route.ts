@@ -10,9 +10,10 @@ export async function POST(request: Request) {
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   const body = await request.json();
 
-  // Önce kullanıcıyı doğrula
+  // Önce kullanıcıyı doğrula (anon key ile)
   const userRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
     headers: { Authorization: `Bearer ${token}`, apikey: anonKey },
   });
@@ -21,12 +22,12 @@ export async function POST(request: Request) {
   }
   const user = await userRes.json();
 
-  // Upsert: POST + resolution=merge-duplicates ile
+  // Upsert (service_role key ile, RLS bypass)
   const upsertRes = await fetch(`${supabaseUrl}/rest/v1/profiles`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,
-      apikey: anonKey,
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
       "Content-Type": "application/json",
       Prefer: "resolution=merge-duplicates",
     },
@@ -43,7 +44,6 @@ export async function POST(request: Request) {
 
   if (!upsertRes.ok) {
     const errText = await upsertRes.text();
-    console.error("Supabase upsert hatası:", upsertRes.status, errText);
     return NextResponse.json({ error: `Supabase (${upsertRes.status}): ${errText}` }, { status: 500 });
   }
 
