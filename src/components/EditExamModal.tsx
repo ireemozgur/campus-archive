@@ -45,14 +45,17 @@ export default function EditExamModal({ examId, onClose }: { examId: string; onC
     setSaving(true);
     setError("");
     const supabase = createClient();
-    const { error: updateErr } = await supabase.from("exams").update(form).eq("id", examId);
+    const { data: updated, error: updateErr } = await supabase.from("exams").update(form).eq("id", examId).select();
     if (updateErr) {
       setError(updateErr.message);
-      setSaving(false);
+    } else if (!updated || updated.length === 0) {
+      setError("Kaydedilemedi. Veritabanı izni eksik olabilir. Lütfen site yöneticisine bildirin.");
     } else {
       router.refresh();
       onClose();
+      return;
     }
+    setSaving(false);
   }
 
   return (

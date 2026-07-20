@@ -43,14 +43,17 @@ export default function EditNoteModal({ noteId, onClose }: { noteId: string; onC
     setSaving(true);
     setError("");
     const supabase = createClient();
-    const { error: updateErr } = await supabase.from("notes").update(form).eq("id", noteId);
+    const { data: updated, error: updateErr } = await supabase.from("notes").update(form).eq("id", noteId).select();
     if (updateErr) {
       setError(updateErr.message);
-      setSaving(false);
+    } else if (!updated || updated.length === 0) {
+      setError("Kaydedilemedi. Veritabanı izni eksik olabilir. Lütfen site yöneticisine bildirin.");
     } else {
       router.refresh();
       onClose();
+      return;
     }
+    setSaving(false);
   }
 
   return (
