@@ -74,6 +74,11 @@ export default async function ExamsPage(props: { searchParams?: Promise<{ filter
 
       {error && <p className="mb-4 text-sm text-red-500">Sorgu hatası: {error.message}</p>}
 
+      <div className="mb-4 rounded-lg bg-yellow-100 p-3 text-xs text-yellow-800">
+        Debug: user={!!user}, profile_univ="{profile?.university ?? "null"}", profile_faculty="{profile?.faculty ?? "null"}", total_exams={(allExams || []).length}, filtered={exams.length}
+        {allExams && allExams.map((e: any) => <div key={e.id}>id={e.id.slice(0,8)} vis={e.visibility} univ="{e.university}" fac="{e.faculty}"</div>)}
+      </div>
+
       {exams.length === 0 && (
         <p className="py-12 text-center text-zinc-400 dark:text-zinc-500">Henüz içerik yok.</p>
       )}
