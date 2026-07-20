@@ -35,6 +35,7 @@ ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Herkes notları görebilir" ON notes FOR SELECT USING (true);
 CREATE POLICY "Kullanıcı kendi notlarını ekleyebilir" ON notes FOR INSERT WITH CHECK (auth.uid() = author_id);
+CREATE POLICY "Kullanıcı kendi notlarını düzenleyebilir" ON notes FOR UPDATE USING (auth.uid() = author_id);
 CREATE POLICY "Kullanıcı kendi notlarını silebilir" ON notes FOR DELETE USING (auth.uid() = author_id);
 
 -- Çıkmış sınav soruları
@@ -54,6 +55,7 @@ ALTER TABLE exams ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Herkes sınavları görebilir" ON exams FOR SELECT USING (true);
 CREATE POLICY "Kullanıcı kendi sınavlarını ekleyebilir" ON exams FOR INSERT WITH CHECK (auth.uid() = author_id);
+CREATE POLICY "Kullanıcı kendi sınavlarını düzenleyebilir" ON exams FOR UPDATE USING (auth.uid() = author_id);
 CREATE POLICY "Kullanıcı kendi sınavlarını silebilir" ON exams FOR DELETE USING (auth.uid() = author_id);
 
 -- Ekip arkadaşı ilanları

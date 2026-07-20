@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import EditExamModal from "./EditExamModal";
+import EditNoteModal from "./EditNoteModal";
 
 type Item = {
   id: string;
@@ -15,6 +17,8 @@ type Item = {
 export default function MyItems({ items: initial }: { items: Item[] }) {
   const [items, setItems] = useState(initial);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editType, setEditType] = useState<"sinav" | "not" | null>(null);
   const router = useRouter();
 
   async function handleDelete(id: string, type: string) {
@@ -48,16 +52,33 @@ export default function MyItems({ items: initial }: { items: Item[] }) {
               <p className="truncate text-sm font-medium text-zinc-900 dark:text-white">{item.title}</p>
               <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">{item.subtitle}</p>
             </div>
-            <button
-              onClick={() => handleDelete(item.id, item.type)}
-              disabled={deleting === item.id}
-              className="ml-3 shrink-0 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
-            >
-              {deleting === item.id ? "..." : "Sil"}
-            </button>
+            <div className="flex gap-2 shrink-0 ml-3">
+              {(item.type === "sinav" || item.type === "not") && (
+                <button
+                  onClick={() => { setEditId(item.id); setEditType(item.type as "sinav" | "not"); }}
+                  className="rounded-lg bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                >
+                  Düzenle
+                </button>
+              )}
+              <button
+                onClick={() => handleDelete(item.id, item.type)}
+                disabled={deleting === item.id}
+                className="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
+              >
+                {deleting === item.id ? "..." : "Sil"}
+              </button>
+            </div>
           </div>
         ))}
       </div>
+
+      {editId && editType === "sinav" && (
+        <EditExamModal examId={editId} onClose={() => { setEditId(null); setEditType(null); }} />
+      )}
+      {editId && editType === "not" && (
+        <EditNoteModal noteId={editId} onClose={() => { setEditId(null); setEditType(null); }} />
+      )}
     </div>
   );
 }
