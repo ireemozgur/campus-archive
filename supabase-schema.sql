@@ -66,6 +66,8 @@ CREATE TABLE teammate_listings (
   project_type TEXT NOT NULL, -- Web, Mobile, AI, Game, etc.
   skills_needed TEXT[],
   team_size INT,
+  image_url TEXT,
+  listing_type TEXT DEFAULT 'ekip', -- ekip or topluluk
   author_id UUID REFERENCES profiles(id) NOT NULL,
   is_active BOOLEAN DEFAULT true,
   applicants INT DEFAULT 0,

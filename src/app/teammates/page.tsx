@@ -11,10 +11,14 @@ export default async function TeammatesPage({
   const isCommunity = tab === "community";
 
   const supabase = await createClient();
-  const { data: listings } = await supabase
+  const { data: allListings } = await supabase
     .from("teammate_listings")
     .select("*, profiles(full_name, department)")
     .order("created_at", { ascending: false });
+
+  const listings = (allListings || []).filter((l) =>
+    isCommunity ? l.listing_type === "topluluk" : (l.listing_type === "ekip" || !l.listing_type)
+  );
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
@@ -32,7 +36,6 @@ export default async function TeammatesPage({
         <CreateListingButton />
       </div>
 
-      {/* Tabs */}
       <div className="mb-6 flex gap-1 rounded-xl border border-zinc-200 p-1 dark:border-zinc-700">
         <Link
           href="/teammates"
@@ -57,16 +60,21 @@ export default async function TeammatesPage({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {listings?.length === 0 && (
+        {listings.length === 0 && (
           <p className="col-span-full text-center text-zinc-400 dark:text-zinc-500">
             Henüz ilan yok. İlk ilanı sen oluştur!
           </p>
         )}
-        {listings?.map((listing) => (
+        {listings.map((listing) => (
           <div
             key={listing.id}
             className="rounded-2xl border border-zinc-200 p-5 transition-all hover:border-campus-200 hover:shadow-sm dark:border-zinc-700 dark:hover:border-campus-700"
           >
+            {listing.image_url && (
+              <div className="mb-3 -mx-5 -mt-5 overflow-hidden rounded-t-2xl h-40 bg-zinc-100 dark:bg-zinc-800">
+                <img src={listing.image_url} alt={listing.title} className="h-full w-full object-cover" />
+              </div>
+            )}
             <div className="mb-2 flex items-start justify-between">
               <span className="rounded-lg bg-campus-50 px-2.5 py-1 text-xs font-medium text-campus-700 dark:bg-campus-800 dark:text-campus-200">
                 {listing.project_type}
