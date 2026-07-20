@@ -14,20 +14,32 @@ export default async function NotesPage(props: { searchParams?: Promise<{ filter
     profile = data;
   }
 
-  let query = supabase.from("notes").select("*, profiles(full_name, university, department)");
+  const { data: allNotes, error } = await supabase
+    .from("notes")
+    .select("*, profiles(full_name, university, department)")
+    .order("created_at", { ascending: false });
 
-  // Önce herkese açık olanları göster
-  query = query.eq("visibility", "all");
+  let notes = allNotes || [];
 
-  if (filter === "university" && profile?.university) {
-    query = query.eq("university", profile.university);
-  } else if (filter === "faculty" && profile?.faculty) {
-    query = query.eq("faculty", profile.faculty);
-  } else if (filter === "department" && profile?.department) {
-    query = query.eq("department", profile.department);
+  if (user && profile) {
+    notes = notes.filter((n: any) => {
+      if (n.visibility === "all") return true;
+      if (n.visibility === "university") return n.university && profile.university && n.university === profile.university;
+      if (n.visibility === "faculty") return n.faculty && profile.faculty && n.faculty === profile.faculty;
+      if (n.visibility === "department") return n.department && profile.department && n.department === profile.department;
+      return false;
+    });
+  } else {
+    notes = notes.filter((n: any) => n.visibility === "all");
   }
 
-  const { data: notes, error } = await query.order("created_at", { ascending: false });
+  if (filter === "university" && profile?.university) {
+    notes = notes.filter((n: any) => n.university === profile.university);
+  } else if (filter === "faculty" && profile?.faculty) {
+    notes = notes.filter((n: any) => n.faculty === profile.faculty);
+  } else if (filter === "department" && profile?.department) {
+    notes = notes.filter((n: any) => n.department === profile.department);
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
@@ -62,11 +74,11 @@ export default async function NotesPage(props: { searchParams?: Promise<{ filter
 
       {error && <p className="mb-4 text-sm text-red-500">Sorgu hatası: {error.message}</p>}
 
-      {(!notes || notes.length === 0) && (
+      {notes.length === 0 && (
         <p className="py-12 text-center text-zinc-400 dark:text-zinc-500">Henüz içerik yok.</p>
       )}
 
-      {notes && notes.length > 0 && (
+      {notes.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {notes.map((n: any) => (
             <div key={n.id} className="rounded-2xl border border-zinc-200 p-5 transition-all hover:border-campus-200 hover:shadow-sm dark:border-zinc-700 dark:hover:border-campus-700">

@@ -14,21 +14,32 @@ export default async function ExamsPage(props: { searchParams?: Promise<{ filter
     profile = data;
   }
 
-  let query = supabase.from("exams").select("*, profiles(full_name, university, department)");
+  const { data: allExams, error } = await supabase
+    .from("exams")
+    .select("*, profiles(full_name, university, department)")
+    .order("created_at", { ascending: false });
 
-  // Önce herkese açık olanları göster
-  query = query.eq("visibility", "all");
+  let exams = allExams || [];
 
-  // Filtr butonları ile kendi üniversite/fakülte/bölümüne daralt
-  if (filter === "university" && profile?.university) {
-    query = query.eq("university", profile.university);
-  } else if (filter === "faculty" && profile?.faculty) {
-    query = query.eq("faculty", profile.faculty);
-  } else if (filter === "department" && profile?.department) {
-    query = query.eq("department", profile.department);
+  if (user && profile) {
+    exams = exams.filter((e: any) => {
+      if (e.visibility === "all") return true;
+      if (e.visibility === "university") return e.university && profile.university && e.university === profile.university;
+      if (e.visibility === "faculty") return e.faculty && profile.faculty && e.faculty === profile.faculty;
+      if (e.visibility === "department") return e.department && profile.department && e.department === profile.department;
+      return false;
+    });
+  } else {
+    exams = exams.filter((e: any) => e.visibility === "all");
   }
 
-  const { data: exams, error } = await query.order("created_at", { ascending: false });
+  if (filter === "university" && profile?.university) {
+    exams = exams.filter((e: any) => e.university === profile.university);
+  } else if (filter === "faculty" && profile?.faculty) {
+    exams = exams.filter((e: any) => e.faculty === profile.faculty);
+  } else if (filter === "department" && profile?.department) {
+    exams = exams.filter((e: any) => e.department === profile.department);
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
@@ -63,11 +74,11 @@ export default async function ExamsPage(props: { searchParams?: Promise<{ filter
 
       {error && <p className="mb-4 text-sm text-red-500">Sorgu hatası: {error.message}</p>}
 
-      {(!exams || exams.length === 0) && (
+      {exams.length === 0 && (
         <p className="py-12 text-center text-zinc-400 dark:text-zinc-500">Henüz içerik yok.</p>
       )}
 
-      {exams && exams.length > 0 && (
+      {exams.length > 0 && (
         <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-700">
           <table className="w-full text-left text-sm">
             <thead className="bg-zinc-50 dark:bg-zinc-800">
