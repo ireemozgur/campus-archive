@@ -1,10 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import UploadNote from "@/components/UploadNote";
 
-function q(v: string | null | undefined) {
-  return v ? `"${v.replace(/"/g, '""')}"` : "";
-}
-
 export default async function NotesPage(props: { searchParams?: Promise<{ filter?: string }> }) {
   const searchParams = await props.searchParams;
   const filter = searchParams?.filter || "all";
@@ -20,19 +16,8 @@ export default async function NotesPage(props: { searchParams?: Promise<{ filter
 
   let query = supabase.from("notes").select("*, profiles(full_name, university, department)");
 
-  if (user && profile?.university) {
-    const orConds = ["visibility.eq.all"];
-    orConds.push(`and(visibility.eq.university,university.eq.${q(profile.university)})`);
-    if (profile.faculty) {
-      orConds.push(`and(visibility.eq.faculty,faculty.eq.${q(profile.faculty)})`);
-    }
-    if (profile.department) {
-      orConds.push(`and(visibility.eq.department,department.eq.${q(profile.department)})`);
-    }
-    query = query.or(orConds.join(","));
-  } else {
-    query = query.eq("visibility", "all");
-  }
+  // Önce herkese açık olanları göster
+  query = query.eq("visibility", "all");
 
   if (filter === "university" && profile?.university) {
     query = query.eq("university", profile.university);
@@ -42,7 +27,7 @@ export default async function NotesPage(props: { searchParams?: Promise<{ filter
     query = query.eq("department", profile.department);
   }
 
-  const { data: notes } = await query.order("created_at", { ascending: false });
+  const { data: notes, error } = await query.order("created_at", { ascending: false });
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
@@ -74,6 +59,8 @@ export default async function NotesPage(props: { searchParams?: Promise<{ filter
           </a>
         ))}
       </div>
+
+      {error && <p className="mb-4 text-sm text-red-500">Sorgu hatası: {error.message}</p>}
 
       {(!notes || notes.length === 0) && (
         <p className="py-12 text-center text-zinc-400 dark:text-zinc-500">Henüz içerik yok.</p>
