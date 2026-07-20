@@ -23,6 +23,7 @@ export default async function NotesPage(props: { searchParams?: Promise<{ filter
 
   if (user && profile) {
     notes = notes.filter((n: any) => {
+      if (n.author_id === user.id) return true;
       if (n.visibility === "all") return true;
       if (n.visibility === "university") return n.university && profile.university && n.university === profile.university;
       if (n.visibility === "faculty") return n.faculty && profile.faculty && n.faculty === profile.faculty;
@@ -73,6 +74,13 @@ export default async function NotesPage(props: { searchParams?: Promise<{ filter
       </div>
 
       {error && <p className="mb-4 text-sm text-red-500">Sorgu hatası: {error.message}</p>}
+
+      {!user && (
+        <p className="mb-4 rounded-lg bg-blue-50 p-3 text-sm text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+          Üniversitene/fakültene özel içerikleri görmek için{' '}
+          <a href="/auth/login" className="font-medium underline">giriş yap</a>.
+        </p>
+      )}
 
       {notes.length === 0 && (
         <p className="py-12 text-center text-zinc-400 dark:text-zinc-500">Henüz içerik yok.</p>

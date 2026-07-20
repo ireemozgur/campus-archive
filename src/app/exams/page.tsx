@@ -23,6 +23,8 @@ export default async function ExamsPage(props: { searchParams?: Promise<{ filter
 
   if (user && profile) {
     exams = exams.filter((e: any) => {
+      // Kendi içeriklerin her zaman görünür
+      if (e.author_id === user.id) return true;
       if (e.visibility === "all") return true;
       if (e.visibility === "university") return e.university && profile.university && e.university === profile.university;
       if (e.visibility === "faculty") return e.faculty && profile.faculty && e.faculty === profile.faculty;
@@ -74,10 +76,12 @@ export default async function ExamsPage(props: { searchParams?: Promise<{ filter
 
       {error && <p className="mb-4 text-sm text-red-500">Sorgu hatası: {error.message}</p>}
 
-      <div className="mb-4 rounded-lg bg-yellow-100 p-3 text-xs text-yellow-800">
-        Debug: user={!!user}, profile_univ="{profile?.university ?? "null"}", profile_faculty="{profile?.faculty ?? "null"}", total_exams={(allExams || []).length}, filtered={exams.length}
-        {allExams && allExams.map((e: any) => <div key={e.id}>id={e.id.slice(0,8)} vis={e.visibility} univ="{e.university}" fac="{e.faculty}"</div>)}
-      </div>
+      {!user && (
+        <p className="mb-4 rounded-lg bg-blue-50 p-3 text-sm text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+          Üniversitene/fakültene özel içerikleri görmek için{' '}
+          <a href="/auth/login" className="font-medium underline">giriş yap</a>.
+        </p>
+      )}
 
       {exams.length === 0 && (
         <p className="py-12 text-center text-zinc-400 dark:text-zinc-500">Henüz içerik yok.</p>
