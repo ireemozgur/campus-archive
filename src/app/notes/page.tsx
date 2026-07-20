@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import UploadNote from "@/components/UploadNote";
+import FilterableNotesList from "@/components/FilterableNotesList";
 
 export default async function NotesPage(props: { searchParams?: Promise<{ filter?: string }> }) {
   const searchParams = await props.searchParams;
@@ -86,28 +87,7 @@ export default async function NotesPage(props: { searchParams?: Promise<{ filter
         <p className="py-12 text-center text-zinc-400 dark:text-zinc-500">Henüz içerik yok.</p>
       )}
 
-      {notes.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {notes.map((n: any) => (
-            <div key={n.id} className="rounded-2xl border border-zinc-200 p-5 transition-all hover:border-campus-200 hover:shadow-sm dark:border-zinc-700 dark:hover:border-campus-700">
-              <div className="mb-3 flex items-center justify-between">
-                <span className="rounded-lg bg-campus-50 px-2.5 py-1 text-xs font-medium text-campus-700 dark:bg-campus-800 dark:text-campus-200">
-                  {n.course_code || "Genel"}
-                </span>
-                <span className="text-xs text-zinc-400">{n.downloads || 0} indirme</span>
-              </div>
-              <h3 className="mb-1 font-semibold text-zinc-900 dark:text-white">{n.title}</h3>
-              {n.description && <p className="mb-3 line-clamp-2 text-sm text-zinc-500 dark:text-zinc-400">{n.description}</p>}
-              <div className="flex items-center justify-between border-t border-zinc-100 pt-3 text-xs text-zinc-400 dark:border-zinc-700">
-                <span>{n.profiles?.full_name || "Anonim"}</span>
-                {n.file_url && (
-                  <a href={n.file_url} target="_blank" className="font-medium text-campus-600 hover:text-campus-800 dark:text-campus-400">İndir</a>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {notes.length > 0 && <FilterableNotesList notes={notes} />}
     </div>
   );
 }
